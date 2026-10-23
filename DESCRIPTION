@@ -7,7 +7,7 @@ Description: Computes, bounds, and visualizes the Maximal Possible
     <doi:10.1002/qre.2697> from fitted second-order response surface
     models, with noise-aware, norm-generalized and feasibility-aware
     extensions.
-Version: 0.5.1.9000
+Version: 0.5.1
 Authors@R: person("Hubert", "Boulic", role = c("aut", "cre"),
                   email = "hb914162@gmail.com")
 Depends: R (>= 4.1)
