@@ -48,7 +48,7 @@ test_that("the explorer runs the convergence check and reports it in plain words
     expect_equal(sort(unique(st$conv_res()$seed)), 1:3)
     expect_match(output$conv_info$html, "below the exact value")
     expect_match(output$conv_last$html, "LHS up to 800 samples, seeds 1-3")
-    expect_match(output$conv_last$html, "\\(took [0-9.]+ s\\)")
+    expect_match(output$conv_last$html, "\\(took (&lt; )?[0-9.]+ s\\)")
   })
 })
 
