@@ -32,3 +32,5 @@ LazyData: true
 RoxygenNote: 7.3.1
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+URL: https://github.com/hubertboulicblb-debug/herminR
+BugReports: https://github.com/hubertboulicblb-debug/herminR/issues

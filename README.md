@@ -61,8 +61,8 @@ link that restores the analysis.
 
 ```r
 # install.packages("remotes")
-# from GitHub (replace YOUR-ACCOUNT with the repository owner)
-remotes::install_github("YOUR-ACCOUNT/herminR", build_vignettes = TRUE)
+# from GitHub
+remotes::install_github("hubertboulicblb-debug/herminR", build_vignettes = TRUE)
 
 # or from a release tarball
 remotes::install_local("herminR_0.5.1.tar.gz")
