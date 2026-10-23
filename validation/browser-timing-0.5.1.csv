@@ -1,0 +1,35 @@
+study,action,seconds
+pastry,Open the app,0.593
+pastry,Load data and fit models,0.162
+pastry,Change the norm (L1 to L2),0.043
+pastry,Change the norm back,0.049
+pastry,Open the term Sankey,0.178
+pastry,Open the contour view (first time),0.13
+pastry,Open the contour view again (cached),0.039
+pastry,Go to Uncertainty (intervals drawn),0.325
+pastry,Change the interval level,0.21
+pastry,Run bootstrap (200 replicates),1.535
+pastry,Go to Robustness and run selection paths,0.618
+pastry,Run feasible-region sampling (5000),0.07
+pastry,Check convergence (12 runs),0.403
+pastry,Download the HTML report,2.218
+synthetic,Open the app,0.6
+synthetic,Fit 4 models on 729 runs (choose factors),0.046
+synthetic,Change the norm (L1 to L2),0.068
+synthetic,Change the norm back,0.052
+synthetic,Open the term Sankey,0.205
+synthetic,Open the contour view (first time),0.87
+synthetic,Open the contour view again (cached),0.047
+synthetic,Go to Uncertainty (intervals drawn),0.543
+synthetic,Change the interval level,0.522
+synthetic,Run bootstrap (200 replicates),2.342
+synthetic,Go to Robustness and run selection paths,1.417
+synthetic,Run feasible-region sampling (5000),0.209
+synthetic,Check convergence (12 runs),1.638
+synthetic,Download the HTML report,2.361
+simulation,Open the app,0.69
+simulation,Load data (coefficients),0.245
+simulation,Change the norm (L1 to L2),0.235
+simulation,Change the norm back,0.236
+simulation,Open the term Sankey,0.335
+simulation,Download the HTML report,2.112

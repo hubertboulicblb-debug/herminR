@@ -1,0 +1,134 @@
+---
+title: "Interpreting MPI: what it can and cannot tell you"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Interpreting MPI: what it can and cannot tell you}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6.5, fig.height = 3.6)
+```
+
+```{r setup, message = FALSE}
+library(herminR)
+data(pastrydough)
+fit <- lm(y ~ block + (x1 + x2 + x3)^2 + I(x1^2) + I(x2^2) + I(x3^2), data = pastrydough)
+```
+
+The Maximal Possible Influence (MPI) of a factor is a property of a **fitted
+model**: the largest change in the predicted response that one coded unit of
+the factor can cause, with the other factors set where they amplify it most.
+This vignette is a checklist for turning MPI values into scientific
+statements. Each section names a question, what herminR offers to answer it,
+and what it cannot establish.
+
+## 1. Is the model adequate?
+
+MPI inherits every weakness of the model it is computed from. A large MPI
+from a model that misses curvature, or fits noise, is a large number about
+the wrong surface.
+
+* Check the usual diagnostics first: residual plots, lack of fit (replicated
+  centre points), influential runs, and whether the second-order model is
+  sufficient.
+* `mpi_selection_paths()` shows whether the ranking survives reasonable
+  simplifications of the model. If it does not, report that the conclusion
+  depends on the model choice.
+
+**MPI cannot** tell you whether the model is right.
+
+## 2. Is the estimate precise?
+
+```{r}
+u <- mpi(fit, bounds = "ellipsoid", level = 0.95, abs = TRUE)
+u[, c("factor", "estimate", "lower", "upper")]
+```
+
+What each interval means:
+
+| Method | What it covers | When it is unreliable |
+|---|---|---|
+| `"ellipsoid"` | The range of the factor's MPI over the joint confidence ellipsoid of all coefficients it uses (with their covariance). At least the nominal coverage, usually more, if the model is right and errors are roughly normal. | Per factor only: the joint coverage of all factors at once is lower. |
+| `"delta"` | Estimate +/- t x SE (delta method). Close to nominal coverage when the estimate is clearly away from zero. | Near zero, or when a coefficient may change sign: coverage can fall below nominal. |
+| `"se"` | Each coefficient shrunk towards zero by its SE (screening aid). | No exact joint coverage: not a confidence interval. |
+
+"Lower bound > 0" in `mpi_interval_plot()` is a visual convention, not a
+test, and no multiplicity correction is applied across factors or responses.
+The package's own simulations (see the validation report) estimate the
+coverage of `"delta"` and `"ellipsoid"` for representative cases.
+
+## 3. Is the ranking stable?
+
+Precise estimates can still be close to each other. The bootstrap answers a
+different question from the intervals: when the experiment is replayed with
+new noise, does the same factor come first?
+
+```{r}
+b <- bootstrap_ranks(fit, n = 200, seed = 1)
+b[, c("factor", "rank_mean", "rank_lower", "rank_upper", "top1_frac")]
+```
+
+A factor that ranks first in the original fit but not in most replays
+(`top1_frac` well below 1) should not be presented as the clear leader. Use
+`plot(b, type = "flow")` to see where each factor lands.
+
+## 4. Is the effect practically important?
+
+MPI is in the units of the response per coded unit. Whether 1.68 units of
+`y` matters is a subject-matter question: compare it with the measurement
+error, the specification limits, or the change you need. Standardised views
+(`standardize_mpi()`, Eq. 5) compare factors **within** a response; they do
+not make different responses comparable in importance.
+
+## 5. Are we inside the studied region?
+
+MPI is defined on the coded range [-1, 1]. Values for wider ranges
+(`mpi_adjust_range()` beyond +/-1) extrapolate the fitted surface and the
+package warns. The contour view shows where the MPI step lies:
+
+```{r, fig.height = 4.5}
+mpi_contour(mpi(fit), factor = "x2")
+```
+
+If the most favourable settings of the other factors are impossible to run,
+use `mpi_feasible()` with the real operating region.
+
+## 6. Is a sampled feasible-region value reliable?
+
+With a constraint, the feasible MPI is found by sampling, and the sampled
+maximum is a **lower estimate** of the true value. Check that it has levelled
+off before reporting it:
+
+```{r, fig.height = 3}
+cv <- mpi_feasible_convergence(fit, constraint = function(d) d$x1 + d$x2 <= 0,
+                               sizes = c(500, 1000, 2000, 4000), seeds = 1:3)
+attr(cv, "summary")
+plot(cv)
+```
+
+Report the sample size and whether the value was stable, and never present a
+sampled maximum as exact.
+
+## 7. Influence is not causation
+
+MPI measures how sensitive the **fitted surface** is to each factor. In a
+designed experiment where factors were set independently by the
+experimenter, a large MPI supports a causal reading for the studied range.
+Outside that setting (observational data, factors that move together,
+uncontrolled covariates), MPI describes the model, not the process: the flow
+diagrams of `mpi_sankey()` show how the model adds up, not causal pathways.
+Correlation between responses (`response_cor()`) is descriptive only.
+
+Being influential does not mean being controllable either: whether a factor
+can be set precisely and cheaply in production is a separate question.
+
+## Summary: a reporting template
+
+> In the fitted second-order model (adequacy: ...), one coded unit of
+> **x2** can change **y** by up to **1.68** (95% ellipsoid interval
+> 0.84-2.54). x2 ranked first in 100% of 200 residual-bootstrap replays and
+> on every selection path. Within the operating region (...), the attainable
+> change is ... (exact / sampled with ... pairs, stable). These are model
+> sensitivities within the studied range; ...

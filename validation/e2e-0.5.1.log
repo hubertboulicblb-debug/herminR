@@ -1,0 +1,72 @@
+herminR 0.5.1 browser checks, 2026-10-22T16:50Z
+R 4.3.3 | shiny 1.8.0 | ggplot2 3.4.4 
+== happy_path
+PASS opens on Start here
+PASS example goes to step 2
+PASS stepper greys out unavailable stages
+PASS step 3 explains why it is unavailable
+PASS step 3 controls hidden for coefficient-only data
+PASS 'Go to Data' button navigates to step 1
+PASS stages become available with raw data
+PASS blocked pastry model gives the reference MPI (x2: 1.68)
+PASS intervals shown with fitted models
+PASS Run bootstrap is disabled while running
+PASS Run bootstrap re-enabled afterwards
+PASS bootstrap shows last-run details
+PASS stale-result warning after changing settings
+PASS example fills the constraint
+PASS sampling waits for the button
+PASS sampled result labelled Approximate
+PASS report has findings and embedded plots
+PASS bookmark link generated
+PASS link restores the data source
+PASS link restores the same model and results
+PASS link restores the current stage
+PASS no visible errors
+
+0 failure(s)
+== interaction
+PASS hovering the heatmap shows a tooltip for x2 on y
+PASS tooltip gives the MPI (1.679) and the rank (1 of 3)
+PASS click highlights x2 (bar on every stage)
+PASS highlight carried to the Uncertainty stage
+PASS interval plot tooltip with the interval
+PASS snapshot kept
+PASS comparison describes both settings
+PASS rank comparison plot drawn
+PASS link restores the highlighted factor
+PASS link restores the snapshot and comparison
+PASS per-factor scaling changes rankings (dss_sim)
+0 failure(s)
+== flows
+PASS term Sankey drawn
+PASS anatomy note explains the y4 decomposition
+PASS interaction network drawn
+PASS click away from factors highlights nothing
+PASS factor-to-response Sankey drawn
+PASS contour view drawn
+PASS contour note gives the MPI step of x2 (1.679)
+PASS bootstrap rank flow drawn
+0 failure(s)
+== viewports
+PASS 1440x900: heatmap height 558 px within 360-640
+PASS 1440x900: no horizontal page scroll (content 1440 px)
+PASS 1440x900: heatmap has a text alternative
+PASS 1280x800: heatmap height 496 px within 360-640
+PASS 1280x800: no horizontal page scroll (content 1280 px)
+PASS 1280x800: heatmap has a text alternative
+PASS keyboard: 'Highlight a factor' selects x3
+PASS keyboard: Enter opens the collapsed values table
+PASS no empty 'More' menu while the Advanced View is off
+PASS Advanced View appears under 'More' when switched on
+PASS 1024x768: heatmap height 476 px within 360-640
+PASS 1024x768: no horizontal page scroll (content 1024 px)
+PASS 1024x768: heatmap has a text alternative
+PASS 768x1024: heatmap height 635 px within 360-640
+PASS 768x1024: no horizontal page scroll (content 768 px)
+PASS 768x1024: heatmap has a text alternative
+PASS 390x844: heatmap height 523 px within 360-640
+PASS 390x844: no horizontal page scroll (content 390 px)
+PASS 390x844: heatmap has a text alternative
+0 failure(s)
+screenshots: /tmp/tmp.CrQBJo4sTK

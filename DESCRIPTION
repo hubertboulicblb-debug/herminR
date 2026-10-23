@@ -1,0 +1,34 @@
+Package: herminR
+Type: Package
+Title: Maximal Possible Influence and Noise-Aware Factor Influence
+    Heatmaps for Response Surface Models
+Description: Computes, bounds, and visualizes the Maximal Possible
+    Influence (MPI) metric of Otava and Mylona (2020)
+    <doi:10.1002/qre.2697> from fitted second-order response surface
+    models, with noise-aware, norm-generalized and feasibility-aware
+    extensions.
+Version: 0.5.1.9000
+Authors@R: person("Hubert", "Boulic", role = c("aut", "cre"),
+                  email = "hb914162@gmail.com")
+Depends: R (>= 4.1)
+Imports:
+    rsm,
+    stats,
+    utils,
+    ggplot2,
+    tibble,
+    dplyr,
+    rlang (>= 1.0.0),
+    cli,
+    withr
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    shiny (>= 1.6.0)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.1
+VignetteBuilder: knitr
+Config/testthat/edition: 3

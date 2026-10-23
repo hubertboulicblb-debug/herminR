@@ -1,0 +1,536 @@
+<style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+---
+title: "The visualisation of the results: case studies"
+output: html_document
+---
+
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 120)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(gtools)
+library(reshape2)
+library(scales)
+library(withr)
+library(backports)
+library(crayon)
+library(vctrs)
+library(pillar)
+library(labeling)
+
+library(ggplot2)
+library(farver)
+
+
+### Main function
+
+heatmapVisualization <- function(main_matrix, quadratic_matrix, interactions_list, type, absoluteValue, scale, 
+                                 include = rep(1, ncol(main_matrix)), fullRange = "TRUE", ranges, 
+                                 pdfOut = FALSE, pdfName = NULL){
+  
+  ## Reduce data if only few parameters are of interest
+  
+  main_matrix <- main_matrix[, as.logical(include)]
+  quadratic_matrix <- quadratic_matrix[, as.logical(include)]
+  
+  for(i in 1:length(interactions_list)){
+    interactions_list[[i]] <- interactions_list[[i]][as.logical(include), as.logical(include)]
+  }
+  quadratic_matrix <- quadratic_matrix[, as.logical(include)]
+  
+  
+  ## Sum effects appropriately
+  
+  if(type == "mainOnly"){
+      outputData <- main_matrix
+      titleVal = "Main effects only"
+  }
+  # Interpretation: potential of effect on Response if process parameter increased by one
+  # independent on other parameters, so "ranges" of other parameters do not contribute here
+  
+  
+  if(type == "mainQuadraticOnly"){
+    outputData <- sign(main_matrix)*(abs(main_matrix) + abs(quadratic_matrix))
+    titleVal = "Main and Quadratic effects only"
+  }
+  # Interpretation: potential of effect on Response if process parameter increased by one
+  # regardless if increase is from -1 to 0 or from 0 to +1
+  # independent on other parameters, so "ranges" of other parameters do not contribute here
+  
+  if(type == "allEffects"){
+    
+    allEffects <- sign(main_matrix)*(abs(main_matrix) + abs(quadratic_matrix))
+    
+    for(i in 1:nrow(main_matrix)){
+      respData <- interactions_list[[i]]
+      
+      if(any(respData != 0)){
+        effects <- which(respData !=0, arr.ind = T)
+        
+        for (j in 1:nrow(effects)){
+          effectSize <- respData[effects[j, 1], effects[j,2]]
+          
+          if(fullRange == TRUE){
+            allEffects[i, effects[j, 1]] <- sign(allEffects[i, effects[j, 1]])*(abs(allEffects[i, effects[j, 1]]) + abs(effectSize))
+            allEffects[i, effects[j, 2]] <- sign(allEffects[i, effects[j, 2]])*(abs(allEffects[i, effects[j, 2]]) + abs(effectSize))
+          } else {
+            
+            if(sign(allEffects[i, effects[j, 1]]) == 1){
+              allEffects[i, effects[j, 1]] <- allEffects[i, effects[j, 1]] + max(effectSize*ranges[effects[j, 2],])
+            } else {
+              allEffects[i, effects[j, 1]] <- allEffects[i, effects[j, 1]] + min(effectSize*ranges[effects[j, 2],])
+            }
+            
+            if(sign(allEffects[i, effects[j, 2]]) == 1){
+              allEffects[i, effects[j, 2]] <- allEffects[i, effects[j, 2]] + max(effectSize*ranges[effects[j, 1],])
+            } else {
+              allEffects[i, effects[j, 2]] <- allEffects[i, effects[j, 2]] + min(effectSize*ranges[effects[j, 1],])
+            }
+          }
+        }
+        
+      } 
+      
+    }
+    
+    outputData <-   allEffects
+    titleVal = "Main, quadratic and interaction effects"
+  }
+  # Interpretation: potential of effect on Response if process parameter increased by one under certain setting of other parameters
+  # depends on ranges of other parameters => need to take them into account
+  
+  
+  if(scale == "original"){
+    plotData <- melt(outputData)
+  }
+  
+  # Scale the MPI per response
+  if(scale == "perResponse"){
+    outputDataResc <- outputData
+    
+    for (i in 1:nrow(outputDataResc)){
+      maxEff <- max(abs(outputData[i,]))
+      if(maxEff > 0) {outputDataResc[i,] <- outputData[i,]/maxEff}
+    }
+    plotData <- melt(outputDataResc)
+  }
+
+  # plotting part
+  colnames(plotData) <- c("Var", "PP", "value")
+
+  if(absoluteValue == TRUE) {
+    
+    p <- ggplot(plotData, aes(Var, PP)) + geom_tile(aes(fill = abs(value)), colour = "white") + 
+      scale_fill_gradient(low = "white", high = "black")
+    base_size <- 9
+    plotFinal <- p + theme_grey(base_size = base_size) + ylab("Process Factor") + xlab("Response") +  
+      theme(axis.text.x = element_text(angle=90, hjust=0)) + 
+      scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) +
+      labs(title = paste0(titleVal, ": absolute value")) +
+      theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14),
+            plot.title = element_text(size = 14))
+    
+  } else {
+    p <- ggplot(plotData, aes(Var, PP)) + geom_tile(aes(fill = value), colour = "white") + 
+      scale_fill_gradientn(colours = c("gold3","white","forestgreen"), values = rescale(c(min(plotData$value), 0, max(plotData$value))))
+    base_size <- 9
+    plotFinal <- p + theme_grey(base_size = base_size) + ylab("Process Factor") + xlab("Response") +  
+      theme(axis.text.x = element_text(angle = 90, hjust = 0)) + 
+      scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) +
+      labs(title = titleVal) +
+      theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14),
+            plot.title = element_text(size = 14))
+    
+    
+  }
+  
+  print(plotFinal)
+  
+  # output plot as pdf (used for manuscript)
+  if (pdfOut == TRUE){
+    pdf(file = pdfName)
+    plot(plotFinal)
+    dev.off()
+  }
+  
+}
+
+
+```
+
+## The pastry dough experiment
+
+### Data
+
+Load the input data (coefficient estimates based on selected models). 
+
+```{r loadData, echo = FALSE, eval = FALSE}
+
+### NOTE: this chunk is not run, just shows preparation of the data that are saved i nRData file for readers convenience
+
+dataPath <- "YOURPATH"
+
+mainEffects <- read.csv(paste0(dataPath, "Data_Pastry_resultsGLS_main.csv"),header = TRUE, sep = ",", dec = ".")
+rownames(mainEffects) <- mainEffects[, 1]
+mainEffects <- mainEffects[, -1]
+mainEffects <- as.matrix(mainEffects)
+
+quadraticEffects <- read.csv(paste0(dataPath, "Data_Pastry_resultsGLS_quadr.csv"),header = TRUE, sep = ",", dec = ".")
+rownames(quadraticEffects) <- quadraticEffects[, 1]
+quadraticEffects <- quadraticEffects[, -1]
+quadraticEffects <- as.matrix(quadraticEffects)
+
+interactions <- vector("list", nrow(quadraticEffects)) 
+names(interactions) <- rownames(quadraticEffects)
+
+for (i in 1:nrow(quadraticEffects)){
+  intTemp <- read.csv(paste0(dataPath, "Data_Pastry_resultsGLS_Int_y", i,".csv"), header = TRUE, sep = ",", dec = ".")
+  rownames(intTemp) <- intTemp[, 1]
+  intTemp <- intTemp[, -1]
+  intTemp <- as.matrix(intTemp)
+  interactions[[i]] <- intTemp
+}
+
+save(mainEffects, quadraticEffects, interactions, file = paste0(dataPath, "PastryDough_modelResults.RData"))
+
+```
+
+
+```{r loadData2, echo = FALSE, eval = TRUE}
+###TODO: change the data path accordingly
+
+dataPath <- "YOURPATH"
+
+load(paste0(dataPath, "PastryDough_modelResults.RData"))
+
+```
+
+The main the quadratic and the interaction effects for the first response, as an example, are shown below. Note that $0.00$ means that the term has not been included in the final model.  
+
+```{r dataExample, echo = TRUE, eval = TRUE}
+# Main effects
+mainEffects
+# Quadratic effects
+quadraticEffects
+# Interaction effects
+interactions[[1]]
+```
+### Maximal possible influence on raw scale
+
+Heatmap for the main effects only. 
+
+```{r main, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "mainOnly",
+                     absoluteValue = FALSE,
+                     scale = "original")
+```
+
+We can add the quadratic effects. We show the maximal possible increase (MPI), either by moving from -1 to 0 or from 0 to +1. Conveniently, the MPI can be obtained by summing the absolute values of the main and the quadratic effects and by multiplying with the original sign of the main effect.     
+
+```{r quadr, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "mainQuadraticOnly",
+                     absoluteValue = FALSE,
+                     scale = "original")
+```
+
+Analogously, we can add interaction effects. We display the maximal effect that the increase of a particular parameter can cause, when the other parameters are at values of -1 or +1, so the interaction effect sign coincides with the main effect sign. 
+
+```{r inter, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = FALSE,
+                     scale = "original")
+```
+
+
+### Scaling 
+
+```{r scaling, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = FALSE,
+                     scale = "perResponse")
+```
+
+### Absolute value
+
+```{r absscale, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = TRUE,
+                     scale = "perResponse",
+                     #pdfOut = TRUE, 
+                     #pdfName = "perResponseScaleAbs_PD.pdf"
+                     )
+```
+
+
+### Considerations for follow-up experiment
+
+
+#### Remove process parameters
+
+
+```{r subset, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = TRUE,
+                     scale = "perResponse",
+                     include = c(1,1,0),
+                     #pdfOut = TRUE, 
+                     #pdfName = "perResponseScaleAbs_remove_PD.pdf"
+                     )
+```
+
+#### Change the range of the factors
+
+
+```{r ranges, echo = TRUE, eval = TRUE}
+restrictedRanges = matrix(rep(c(-1,1), each = ncol(mainEffects)), ncol = 2, byrow = FALSE)
+restrictedRanges[3, ] <- c(-0.1, 0.1)
+colnames(restrictedRanges) <- c("lower", "upper")
+rownames(restrictedRanges) <- colnames(mainEffects)
+restrictedRanges
+
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = TRUE,
+                     scale = "perResponse",
+                     fullRange = FALSE,
+                     ranges = restrictedRanges,
+                     #pdfOut = TRUE, 
+                     #pdfName = "perResponseScaleAbs_restrict_PD.pdf"
+                     )
+
+
+```
+
+
+******
+<P style="page-break-before: always">
+
+## The simulated data
+
+### Data
+
+Simulate the modelling result of the hypothetical data. 
+
+```{r simulate2, echo = FALSE, eval = TRUE}
+
+
+# number of factors
+nPars <- 11
+# number of responses
+nResp <- 20
+# probability of presence of quadratic effect
+probQuadratic <- 0.2
+# probability of presence of interaction effect
+probInteraction <- 0.30
+
+
+mainEffects <- quadraticEffects <- matrix(numeric(nPars*nResp), nrow = nResp)
+colnames(mainEffects) <- colnames(quadraticEffects) <- paste0("Factor_", 1:nPars)
+rownames(mainEffects) <- rownames(quadraticEffects) <- paste0("Response_", 1:nResp)
+
+interactions <- vector("list", nResp) 
+names(interactions) <- paste0("Response_", 1:nResp)
+
+for (i in 1:nResp){
+  interactions[[i]] <- matrix(numeric(nPars*nPars), nrow = nPars)
+  colnames(interactions[[i]]) <-   rownames(interactions[[i]]) <-   colnames(mainEffects)
+}
+
+
+set.seed(1234)
+
+for(i in 1:nResp){
+  # select randomly how many factors are selected
+  numberSelected <- sample(2:(nPars-1), 1, replace = TRUE)
+  # select randomly which ones are selected
+  mainEffectsSelected <- sort(sample(1:nPars, numberSelected, replace = FALSE))
+  
+  for(j in 1:length(mainEffectsSelected)){
+    # generate main effect size
+    mainEffects[i, mainEffectsSelected[j]] <- round(rnorm(1, 0, 5), 2)
+    
+    # generate quadratic effect size, with probability of 0.2 of presence of quadratic effect
+    if(rbinom(1, 1, probQuadratic) == 1){
+      quadraticEffects[i, mainEffectsSelected[j]] <- round(rnorm(1, 0, 5), 2)
+    }
+    
+  }
+  
+  # generate interaction effects
+  perm <- permutations(n = numberSelected, r = 2, v = mainEffectsSelected)
+  
+  if(nrow(perm) > 2){
+    comb <- perm[perm[, 1] <= perm[, 2], ]
+    intID <- as.logical(rbinom(nrow(comb), 1, probInteraction))
+    
+    if (sum(intID) == 1){
+      interactions[[i]][comb[intID, 1], comb[intID, 2]] <- round(rnorm(1, 0, 5), 2)
+    }
+    
+    if(sum(intID) > 1){
+      comb <- comb[intID, ]
+      for (j in 1:nrow(comb)){
+        
+        interactions[[i]][comb[j, 1], comb[j, 2]] <- round(rnorm(1, 0, 5), 2)
+        
+      }
+    }
+  } else {
+
+    if(rbinom(1, 1, probInteraction)){
+      interactions[[i]][perm[1, 1], perm[1, 2]] <- round(rnorm(1, 0, 5), 2)
+    }
+  }
+  
+}
+
+
+## Inflate main/quadratic effects for certain factors (2, 6, 11) to get better contrast of results
+mainEffects[, 2] <- mainEffects[,2]*5
+mainEffects[, 6] <- mainEffects[,6]*5
+mainEffects[, 11] <- mainEffects[,11]*5
+
+quadraticEffects[, 2] <- quadraticEffects[,2]*5
+quadraticEffects[, 6] <- quadraticEffects[,6]*5
+quadraticEffects[, 11] <- quadraticEffects[,11]*5
+
+
+
+```
+
+### Maximal possible influence on raw scale
+
+Heatmap for the main effects only. 
+
+```{r main2, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "mainOnly",
+                     absoluteValue = FALSE,
+                     scale = "original")
+```
+
+We can add the quadratic effects. We show the MPI, either by moving from -1 to 0 or from 0 to +1. Conveniently, the MPI can be obtained by summing the absolute values of the main and the quadratic effects and by multiplying with the original sign of the main effect.     
+
+```{r quadr2, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "mainQuadraticOnly",
+                     absoluteValue = FALSE,
+                     scale = "original")
+```
+
+Analogously, we can add interaction effects. We display the maximal effect that the increase of a particular parameter can cause, when the other parameters are at values of -1 or +1, so the interaction effect sign coincides with the main effect sign. 
+
+```{r inter2, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = FALSE,
+                     scale = "original")
+```
+
+
+### Scaling 
+
+```{r scaling2, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = FALSE,
+                     scale = "perResponse")
+```
+
+### Absolute value
+
+
+```{r absscale2, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = TRUE,
+                     scale = "perResponse",
+                     #pdfOut = TRUE, 
+                     #pdfName = "perResponseScaleAbs_SD.pdf"
+                     )
+```
+
+
+### Considerations for follow-up experiment
+
+#### Remove process parameters
+
+
+```{r subset2, echo = TRUE, eval = TRUE}
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = TRUE,
+                     scale = "perResponse",
+                     include = c(1,1,0,1,1,1,0,0,0,0,1),
+                     #pdfOut = TRUE, 
+                     #pdfName = "perResponseScaleAbs_remove_SD.pdf"
+                     )
+```
+
+#### Change the range of the factors
+
+
+```{r ranges2, echo = TRUE, eval = TRUE}
+restrictedRanges = matrix(rep(c(-1,1), each = ncol(mainEffects)), ncol = 2, byrow = FALSE)
+restrictedRanges[3, ] <- c(-0.1, 0.1)
+colnames(restrictedRanges) <- c("lower", "upper")
+rownames(restrictedRanges) <- colnames(mainEffects)
+restrictedRanges
+
+heatmapVisualization(main_matrix = mainEffects, 
+                     quadratic_matrix = quadraticEffects,
+                     interactions_list = interactions,
+                     type = "allEffects",
+                     absoluteValue = TRUE,
+                     scale = "perResponse",
+                     fullRange = FALSE,
+                     ranges = restrictedRanges,
+                     #pdfOut = TRUE, 
+                     #pdfName = "perResponseScaleAbs_restrict_SD.pdf"
+                     )
+
+
+```
+

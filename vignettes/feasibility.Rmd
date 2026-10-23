@@ -1,0 +1,34 @@
+---
+title: "Feasible-region restricted MPI"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Feasible-region restricted MPI}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6, fig.height = 3.5)
+```
+
+```{r setup, message = FALSE}
+library(herminR)
+```
+
+MPI assumes every factor can range over the full coded cube. When part of that
+region is infeasible, only part of the influence can actually be attained
+(referee W2).
+
+```{r}
+b <- c(x1 = 1, x2 = 0.5, "x1:x2" = 0.6, "x1^2" = -0.2, "x2^2" = 0.3)
+mpi_feasible(b, region = list(x2 = c(-0.5, 0.5)))
+```
+
+For rectangular regions the computation is exact. For any other shape, pass a
+`constraint` function and use sampling; the sampled maximum is a lower
+estimate that tightens as `size` grows.
+
+```{r}
+mpi_feasible(b, constraint = function(d) d$x1 + d$x2 <= 0,
+             method = "grid", size = 81^2)
+```

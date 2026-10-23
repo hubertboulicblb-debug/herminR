@@ -1,0 +1,80 @@
+---
+title: "Uncertainty: noise-aware MPI"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Uncertainty: noise-aware MPI}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6, fig.height = 3.5)
+```
+
+```{r setup, message = FALSE}
+library(herminR)
+```
+
+Every MPI is a function of estimated coefficients, so it inherits their noise.
+Three kinds of bounds are available; they answer different questions.
+
+```{r}
+data(pastrydough)
+fit <- lm(y ~ block + (x1 + x2 + x3)^2 + I(x1^2) + I(x2^2) + I(x3^2),
+          data = pastrydough)
+mpi_se(fit)          # per-coefficient soft-threshold bounds
+mpi_delta(fit)       # delta-method t interval (covariance-aware)
+mpi_ellipsoid(fit)   # exact range over the joint confidence ellipsoid
+```
+
+* **`mpi_se()`** shrinks or inflates each term by `k` standard errors. Each
+  coefficient interval has the nominal level; the aggregated bound has no exact
+  joint coverage. `k_adj = TRUE` uses a Bonferroni quantile across the factor's
+  terms.
+* **`mpi_delta()`** is a first-order approximation. It is unreliable when a
+  coefficient is within about two standard errors of zero, because the norm has
+  a kink there; such factors are flagged in `near_kink`.
+* **`mpi_ellipsoid()`** gives the exact minimum and maximum of the norm over the
+  joint confidence region of the factor's coefficients (F critical value by
+  default). It is simultaneous within each factor and therefore conservative.
+
+The package tests check the ellipsoid optimisation against brute-force
+sampling, and check by simulation that delta intervals are close to nominal
+and ellipsoid intervals are at least nominal when coefficients are away from
+zero.
+
+## Noise-aware heatmap
+
+```{r}
+m <- mpi(fit, bounds = "ellipsoid")
+plot(m, panel = "lower")
+plot(m, panel = "significance")
+```
+
+## Estimate, precision and ranking side by side
+
+A large influence is not necessarily a precisely estimated one.
+`mpi_interval_plot()` shows each factor's estimate with its interval; open
+points mark factors whose interval reaches zero.
+
+```{r, fig.height = 3}
+mpi_interval_plot(m)
+```
+
+The bootstrap answers a different question: how often does each factor keep
+its rank when the experiment is replayed with new noise?
+
+```{r, fig.height = 2.8}
+br <- bootstrap_ranks(fit, n = 500, seed = 1)
+br
+plot(br)
+```
+
+Here the ellipsoid intervals of `x2` and `x3` overlap, yet `x2` ranks first in
+every replicate. That is not a contradiction. Each ellipsoid interval covers
+the whole joint confidence region of *one* factor's coefficients, so it is
+wide and conservative. The ranking depends on the *difference* between
+factors, whose noise largely cancels because both are estimated from the same
+runs. Report both: the intervals for "how large", the rank plot for "which
+first". The default residual bootstrap keeps the design fixed, which is
+appropriate for designed experiments.

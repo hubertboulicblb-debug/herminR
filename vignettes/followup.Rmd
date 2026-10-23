@@ -1,0 +1,41 @@
+---
+title: "Follow-up experiments: range adjustment and factor subsets"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Follow-up experiments: range adjustment and factor subsets}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6, fig.height = 3.5)
+```
+
+```{r setup, message = FALSE}
+library(herminR)
+```
+
+## Changing a factor's range (Otava and Mylona, 2020, Figure 2)
+
+If a follow-up experiment keeps `x3` within (-0.1, 0.1), interactions with
+`x3` can contribute at most 0.1 × |δ| to the *other* factors' MPI. Main and
+quadratic effects are unchanged, because MPI is a one-unit change on the coded
+scale, and `x3`'s own MPI is unchanged because the other factors still span
+their full ranges.
+
+```{r}
+b <- c(x1 = 0.4, x2 = 0.2, x3 = 0.2294, "x3^2" = 0.4185, "x2:x3" = 0.3706, "x1:x3" = 0.2)
+base <- mpi(b, abs = TRUE)
+mpi_adjust_range(base, list(x3 = c(-0.1, 0.1)))
+```
+
+Asymmetric ranges are handled exactly.
+
+## Dropping factors (Otava and Mylona, 2020, Figure 4)
+
+```{r}
+mpi_subset(base, keep = c("x1", "x2"), others = "centre")
+```
+
+With `others = "centre"`, excluded factors are fixed at 0, so interactions
+with them disappear. The two operations can be stacked in either order.

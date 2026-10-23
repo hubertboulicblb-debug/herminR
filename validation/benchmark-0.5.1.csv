@@ -1,0 +1,37 @@
+"study","action","first_run_s","median_s","max_mb"
+"paper simulation (20 responses, 11 factors, coefficients)","HTML report (all stages, plots embedded)",0.739000000000004,0.734999999999999,343.6
+"pastry dough (1 response, 3 factors, 30 runs)","HTML report (all stages, plots embedded)",0.766,0.649,225.9
+"synthetic (4 responses, 6 factors, 729 runs)","HTML report (all stages, plots embedded)",0.963999999999999,0.860000000000007,235.9
+"pastry dough (1 response, 3 factors, 30 runs)","Fit the models",0.00399999999999956,0.00300000000000011,125.7
+"synthetic (4 responses, 6 factors, 729 runs)","Fit the models",0.0100000000000051,0.0100000000000051,169.4
+"paper simulation (20 responses, 11 factors, coefficients)","MPI of all factors and responses",0.0879999999999939,0.0960000000000036,241.6
+"pastry dough (1 response, 3 factors, 30 runs)","MPI of all factors and responses",0.00699999999999967,0.00700000000000145,127.7
+"synthetic (4 responses, 6 factors, 729 runs)","MPI of all factors and responses",0.0459999999999994,0.0459999999999994,188.1
+"paper simulation (20 responses, 11 factors, coefficients)","MPI heatmap (build + draw)",0.156000000000006,0.15300000000002,244.2
+"pastry dough (1 response, 3 factors, 30 runs)","MPI heatmap (build + draw)",0.166,0.134,178.9
+"synthetic (4 responses, 6 factors, 729 runs)","MPI heatmap (build + draw)",0.118000000000002,0.129999999999995,217
+"pastry dough (1 response, 3 factors, 30 runs)","Intervals, ellipsoid, all responses",0.0269999999999992,0.0180000000000007,129.6
+"synthetic (4 responses, 6 factors, 729 runs)","Intervals, ellipsoid, all responses",0.109000000000002,0.0829999999999984,206
+"pastry dough (1 response, 3 factors, 30 runs)","Bootstrap, 200 replicates (one response)",0.968,1.034,228
+"synthetic (4 responses, 6 factors, 729 runs)","Bootstrap, 200 replicates (one response)",1.714,1.99600000000001,253.2
+"pastry dough (1 response, 3 factors, 30 runs)","Selection paths (one response)",0.0589999999999993,0.0560000000000009,149.1
+"synthetic (4 responses, 6 factors, 729 runs)","Selection paths (one response)",0.177,0.177,231.5
+"pastry dough (1 response, 3 factors, 30 runs)","Feasible region, LHS 5000 samples",0.0169999999999995,0.0189999999999984,138.9
+"synthetic (4 responses, 6 factors, 729 runs)","Feasible region, LHS 5000 samples",0.0919999999999987,0.0870000000000033,212
+"pastry dough (1 response, 3 factors, 30 runs)","Convergence check (12 runs, up to 5000)",0.148,0.148,191.8
+"synthetic (4 responses, 6 factors, 729 runs)","Convergence check (12 runs, up to 5000)",0.552,0.600000000000009,245.2
+"pastry dough (1 response, 3 factors, 30 runs)","Contour view (build + draw)",0.396999999999998,0.396999999999998,244.7
+"synthetic (4 responses, 6 factors, 729 runs)","Contour view (build + draw)",0.698,0.75,253.3
+"paper simulation (20 responses, 11 factors, coefficients)","Feasible region, exact",0.00600000000000023,0.00600000000000023,190.8
+"pastry dough (1 response, 3 factors, 30 runs)","Feasible region, exact",0.00600000000000023,0.00600000000000023,126.8
+"synthetic (4 responses, 6 factors, 729 runs)","Feasible region, exact",0.007000000000005,0.007000000000005,167.2
+"paper simulation (20 responses, 11 factors, coefficients)","Term Sankey (build + draw)",0.293000000000006,0.198000000000008,276.8
+"pastry dough (1 response, 3 factors, 30 runs)","Term Sankey (build + draw)",0.194999999999999,0.187000000000005,207.2
+"synthetic (4 responses, 6 factors, 729 runs)","Term Sankey (build + draw)",0.215000000000003,0.200000000000003,237.3
+"paper simulation (20 responses, 11 factors, coefficients)","Interaction network (build + draw)",0.207999999999998,0.198000000000008,274.1
+"pastry dough (1 response, 3 factors, 30 runs)","Interaction network (build + draw)",0.210000000000001,0.183,211.6
+"synthetic (4 responses, 6 factors, 729 runs)","Interaction network (build + draw)",0.233000000000004,0.253,231.4
+"synthetic (4 responses, 6 factors, 729 runs)","Bootstrap, 1000 replicates (worst case)",8.998,8.998,257
+"synthetic (4 responses, 6 factors, 729 runs)","Feasible region, LHS 20000 samples",0.353999999999999,0.320999999999998,209.7
+"paper simulation (20 responses, 11 factors, coefficients)","Factors-to-responses Sankey (build + draw)",0.236999999999995,0.207000000000022,297.3
+"synthetic (4 responses, 6 factors, 729 runs)","Factors-to-responses Sankey (build + draw)",0.155000000000001,0.152000000000001,232

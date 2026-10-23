@@ -1,0 +1,76 @@
+---
+title: "Getting started with herminR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with herminR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6, fig.height = 3.5)
+```
+
+```{r setup, message = FALSE}
+library(herminR)
+```
+
+## What MPI measures
+
+For a second-order model in coded units, the Maximal Possible Influence of a
+factor is the largest absolute change in the response produced by a one-unit
+increase of that factor inside the coded range, with every other factor at its
+most favourable level. For factor 3 of response 4 in Otava and Mylona (2020),
+
+$$\mathrm{MPI}_{34} = |\beta_{34}| + |\gamma_{34}| + |\delta_{234}| = 0.2294 + 0.4185 + 0.3706 = 1.0185,$$
+
+with main effect \(\beta_{34} = 0.2294\), quadratic effect
+\(\gamma_{34} = 0.4185\) and interaction \(\delta_{234} = 0.3706\)
+(their Table 1, bundled as `pastry_table1`).
+
+```{r}
+data(pastry_table1)
+pastry_table1$y4
+mpi(pastry_table1$y4, factors = "x1")
+```
+
+Factor `x1` has no term in this model, so its MPI is 0. The `direction` column
+says whether the maximal change is an increase or a decrease of the response
+when the factor increases (`"either"` when there is no main effect and both
+signs are attainable).
+
+## From a fitted model
+
+Any `lm` with `x`, `I(x^2)`, `x:y` or raw `poly()` terms, or an `rsm` fit with
+`FO()`/`TWI()`/`PQ()`/`SO()`, can be used directly. Block terms are recognised
+as nuisance terms and excluded.
+
+```{r}
+data(pastrydough)
+fit <- lm(y ~ block + (x1 + x2 + x3)^2 + I(x1^2) + I(x2^2) + I(x3^2),
+          data = pastrydough)
+m <- mpi(fit, bounds = "delta")
+m
+```
+
+## Interactive explorer
+
+`run_explorer()` opens a Shiny app (needs the shiny package) that runs the
+same analysis interactively, from data or coefficients to MPI, uncertainty,
+robustness and follow-up. Its *Reproduce* tab gives the R code for what is on
+screen.
+
+```{r, eval = FALSE}
+run_explorer()
+```
+
+## Several responses
+
+Table 1 of Otava and Mylona (2020) for the four pastry responses is bundled:
+
+```{r}
+data(pastry_table1)
+m4 <- mpi_multi(pastry_table1, factors = c("x1", "x2", "x3"))
+m4
+plot(m4, method = "colmax", transpose = TRUE, reorder = FALSE)
+```

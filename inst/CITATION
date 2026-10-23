@@ -1,0 +1,26 @@
+citHeader("To cite herminR in publications, cite the package and the article that defines the Maximal Possible Influence:")
+
+bibentry(
+  bibtype = "Manual",
+  title   = "herminR: Maximal Possible Influence and Noise-Aware Factor Influence Heatmaps for Response Surface Models",
+  author  = person("Hubert", "Boulic"),
+  year    = "2026",
+  note    = paste("R package version", meta$Version),
+  textVersion = paste0("Boulic, H. (2026). herminR: Maximal Possible Influence and Noise-Aware Factor Influence ",
+                       "Heatmaps for Response Surface Models. R package version ", meta$Version, ".")
+)
+
+bibentry(
+  bibtype = "Article",
+  title   = "Communicating statistical conclusions of experiments to scientists",
+  author  = c(person("Martin", "Otava"), person("Kalliopi", "Mylona")),
+  journal = "Quality and Reliability Engineering International",
+  year    = "2020",
+  volume  = "36",
+  number  = "8",
+  pages   = "2688--2698",
+  doi     = "10.1002/qre.2697",
+  textVersion = paste("Otava, M. and Mylona, K. (2020). Communicating statistical conclusions of experiments",
+                      "to scientists. Quality and Reliability Engineering International, 36(8), 2688-2698.",
+                      "doi:10.1002/qre.2697")
+)

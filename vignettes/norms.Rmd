@@ -1,0 +1,36 @@
+---
+title: "Comparing L1, L2 and L-infinity aggregation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparing L1, L2 and L-infinity aggregation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6, fig.height = 3.5)
+```
+
+```{r setup, message = FALSE}
+library(herminR)
+```
+
+Eq. (4) of Otava and Mylona (2020) sums the per-term maximal contributions (L1); only L1 is a
+maximal change of the response. L2 and L-infinity are alternative summaries
+(referee W3): L-infinity reports the single largest contribution, L2 sits in
+between.
+
+```{r}
+b <- c(x1 = 0.9, x2 = 0.3, "x2^2" = 0.3, "x1:x2" = 0.05, "x2:x3" = 0.3, x3 = 0.1)
+cmp <- mpi_compare_norms(b, abs = TRUE)
+cmp$l1
+attr(cmp, "rank_agreement")
+plot(cmp)
+```
+
+Factor `x2` is influential through several moderate terms, so it ranks
+higher under L1 than under L-infinity.
+
+Each panel is scaled by its own maximum, so the plot compares the *pattern*
+of influence between norms; the values are not comparable in magnitude across
+panels, and only L1 is an attainable change of the response.

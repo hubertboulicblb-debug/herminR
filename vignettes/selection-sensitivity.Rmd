@@ -1,0 +1,37 @@
+---
+title: "Model-selection sensitivity"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Model-selection sensitivity}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6, fig.height = 3.5)
+```
+
+```{r setup, message = FALSE}
+library(herminR)
+```
+
+MPI rankings depend on which terms survive model selection (referee W5).
+`mpi_selection_paths()` runs backward elimination along an AIC path and
+partial-F paths at several significance levels. It works on individual
+monomial terms, even for `rsm` `SO()` fits, and by default keeps the
+polynomial well formed (a main effect stays while its square or an interaction
+containing it remains).
+
+```{r}
+data(pastrydough)
+fit <- lm(y ~ block + (x1 + x2 + x3)^2 + I(x1^2) + I(x2^2) + I(x3^2),
+          data = pastrydough)
+sp <- mpi_selection_paths(fit, alphas = c(0.01, 0.05, 0.10), top = 1)
+sp
+lapply(attr(sp, "paths"), `[[`, "terms")
+plot(sp)
+```
+
+A factor whose terms are all removed on a path stays in the table with MPI 0.
+`stability` is the fraction of paths on which the factor ranks within `top`.
+This is a sensitivity analysis over a few plausible procedures, not a test.
