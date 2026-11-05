@@ -1,8 +1,8 @@
 # Advanced settings and advanced results for the explorer ----------------------
 #
-# Everything here is opt-in. The standard explorer outputs never read the
-# advanced inputs, so they are unchanged whatever is set in the panel; the
-# advanced analysis runs only when "Run advanced analysis" is clicked.
+# Everything here is strictly opt-in. Standard explorer outputs never read 
+# advanced inputs, so they remain unaffected regardless of your panel settings. 
+# Advanced analysis only runs when you click "Run advanced analysis."
 
 #' Default advanced settings
 #'
