@@ -1,15 +1,22 @@
-# Release validation report for herminR.
+# Release Validation Report for herminR
 #
-# Produces validation/validation-report-<version>.html (self-contained) and
-# validation/validation-results-<version>.rds with every number in it.
-# Run from the package root, with herminR installed:
-#   Rscript tools/validation/run-validation.R            # full (about 5-10 min)
-#   Rscript tools/validation/run-validation.R --quick    # smaller simulations
+# Outputs:
+#   - validation/validation-report-<version>.html (self-contained HTML report)
+#   - validation/validation-results-<version>.rds (complete numerical results)
 #
-# Sections: environment; reproduction of the paper's 1,520 heatmap cells;
-# MPI against brute force on random models; interval coverage by simulation;
-# bootstrap rank stability in known scenarios; feasible-region convergence;
-# contour step against predict(); package-check and test-suite evidence.
+# Usage (run from the package root with herminR installed):
+#   Rscript tools/validation/run-validation.R         # Full run (approx. 5-10 min)
+#   Rscript tools/validation/run-validation.R --quick # Quick run (reduced simulations)
+#
+# Report Sections:
+#   1. Environment & system configuration
+#   2. Reproduction of the paper's 1,520 heatmap cells
+#   3. MPI benchmark against brute-force on random models
+#   4. Interval coverage validation via simulation
+#   5. Bootstrap rank stability across known scenarios
+#   6. Feasible-region convergence
+#   7. Contour step verification against predict()
+#   8. Package check and test-suite evidence
 
 suppressPackageStartupMessages({ library(herminR); library(ggplot2) })
 args <- commandArgs(trailingOnly = TRUE)
