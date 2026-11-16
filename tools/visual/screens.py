@@ -1,9 +1,21 @@
-"""Screenshots of every stage and view for a visual acceptance review.
+"""Capture full-page and element-level screenshots across all app views for visual QA.
 
-Usage (app running): python tools/visual/screens.py URL OUT_DIR [chromium_path]
-Writes OUT_DIR/<width>/<nn>_<name>.png (full page) and OUT_DIR/<width>/plot_<id>.png
-(each plot alone at its rendered size), then OUT_DIR/index.html (contact sheet).
+Requires the target web application to be running before execution.
+
+Usage:
+    python tools/visual/screens.py <URL> <OUT_DIR> [chromium_path]
+
+Arguments:
+    URL            Base URL of the running application (e.g., http://localhost:3000).
+    OUT_DIR        Root directory where screenshots and reports will be saved.
+    chromium_path  Optional path to a custom Chromium/Chrome executable.
+
+Outputs:
+    OUT_DIR/<width>/<nn>_<name>.png  Full-page screenshots per viewport width and view.
+    OUT_DIR/<width>/plot_<id>.png    Cropped screenshots of individual plots at rendered size.
+    OUT_DIR/index.html               Interactive contact sheet summarizing all captures.
 """
+
 import sys, time, os
 from playwright.sync_api import sync_playwright
 
