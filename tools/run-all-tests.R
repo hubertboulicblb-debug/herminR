@@ -1,7 +1,16 @@
-# Run the complete test suite, including tests marked skip_on_cran(), and fail
-# if anything fails, warns or is skipped. Writes full-tests.log.
-# Usage (from the package root, after installing the package):
+# Run the complete test suite in strict mode (including skip_on_cran() tests).
+# Fails if any test fails, emits a warning, or is skipped.
+#
+# Prerequisites:
+#   - Run from the package root directory
+#   - Package must be installed prior to execution
+#
+# Usage:
 #   Rscript tools/run-all-tests.R
+#
+# Output:
+#   full-tests.log  Detailed test execution log written to the package root.
+
 Sys.setenv(NOT_CRAN = "true")
 suppressPackageStartupMessages({library(testthat); library(herminR)})
 log_file <- "full-tests.log"
